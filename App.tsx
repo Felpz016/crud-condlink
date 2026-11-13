@@ -10,6 +10,7 @@ import { apagarSessao, lerSessao, salvarSessao } from './src/servicos/armazename
 import { mensagemDe, sessaoExpirou } from './src/servicos/http';
 import { tokenExpirado } from './src/servicos/jwt';
 import { TelaLogin } from './src/telas/TelaLogin';
+import { TelaMoradores } from './src/telas/TelaMoradores';
 import { CORES } from './src/tema';
 
 export default function App() {
@@ -113,7 +114,7 @@ export default function App() {
   return (
     <View style={styles.tela}>
       <CabecalhoUnidade nome={sessao.nome} unidade={unidade} aoSair={sair} />
-      <Text style={styles.provisorio}>A lista de moradores chega na fase 3.</Text>
+      <TelaMoradores sessao={sessao} unidade={unidade} aoSessaoExpirar={sessaoVenceu} />
       <StatusBar style="light" />
     </View>
   );
@@ -134,10 +135,5 @@ const styles = StyleSheet.create({
   erro: {
     color: CORES.perigo,
     textAlign: 'center',
-  },
-  provisorio: {
-    padding: 24,
-    fontSize: 16,
-    color: CORES.texto,
   },
 });

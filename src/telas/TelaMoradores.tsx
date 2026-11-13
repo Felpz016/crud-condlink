@@ -3,11 +3,13 @@ import { FlatList, StyleSheet, Text, View } from 'react-native';
 
 import { cadastrarMorador, DadosMorador, MORADOR_VAZIO } from '../api/cadastrarMorador';
 import { editarMorador } from '../api/editarMorador';
+import { inativarMorador } from '../api/inativarMorador';
 import { listarMoradores, Morador } from '../api/listarMoradores';
 import { Sessao } from '../api/login';
 import { nomeDaUnidade, Unidade } from '../api/unidade';
 import { Botao } from '../componentes/Botao';
 import { CartaoMorador, telefoneDe } from '../componentes/CartaoMorador';
+import { ConfirmarInativacao } from '../componentes/ConfirmarInativacao';
 import { FormularioMorador } from '../componentes/FormularioMorador';
 import { mensagemDe, sessaoExpirou } from '../servicos/http';
 import { CORES } from '../tema';
@@ -28,6 +30,9 @@ export function TelaMoradores({ sessao, unidade, aoSessaoExpirar }: TelaMoradore
   // Guarda o morador cujo "Editar" foi tocado, ou null. Se há morador aqui,
   // o formulário de edição está aberto; fechar é voltar a null.
   const [editando, setEditando] = useState<Morador | null>(null);
+  // Mesma ideia: o morador cujo "Inativar" foi tocado. Se há alguém aqui,
+  // a janela de confirmação está aberta.
+  const [inativando, setInativando] = useState<Morador | null>(null);
 
   async function carregar() {
     setCarregando(true);
@@ -52,7 +57,7 @@ export function TelaMoradores({ sessao, unidade, aoSessaoExpirar }: TelaMoradore
 
   // MUDANÇA: toda operação que muda dados passa por aqui. Se o token venceu,
   // volta ao login e devolve false; qualquer outro erro sobe para quem chamou
-  // (o FormularioMorador mostra a mensagem). Use também na Fase 6.
+  // (o FormularioMorador mostra a mensagem). Usado no cadastro, na edição e na inativação.
   async function chamarApi(acao: () => Promise<unknown>): Promise<boolean> {
     try {
       await acao();
@@ -85,6 +90,19 @@ export function TelaMoradores({ sessao, unidade, aoSessaoExpirar }: TelaMoradore
     }
   }
 
+  // Inativa, fecha a janela e recarrega: o morador some da lista.
+  // Se der erro, o await lança e a ConfirmarInativacao mostra a mensagem.
+  async function confirmarInativacao() {
+    if (!inativando) {
+      return;
+    }
+    const id = inativando.id;
+    if (await chamarApi(() => inativarMorador(sessao, id))) {
+      setInativando(null);
+      await carregar();
+    }
+  }
+
   return (
     <View style={styles.tela}>
       <Botao rotulo="+ Cadastrar novo morador na unidade" aoTocar={() => setCadastrando(true)} />
@@ -101,7 +119,9 @@ export function TelaMoradores({ sessao, unidade, aoSessaoExpirar }: TelaMoradore
         refreshing={carregando}
         onRefresh={carregar}
         contentContainerStyle={styles.lista}
-        renderItem={({ item }) => <CartaoMorador morador={item} aoEditar={setEditando} />}
+        renderItem={({ item }) => (
+          <CartaoMorador morador={item} aoEditar={setEditando} aoInativar={setInativando} />
+        )}
         ListEmptyComponent={
           carregando ? null : (
             <Text style={styles.vazio}>
@@ -129,6 +149,14 @@ export function TelaMoradores({ sessao, unidade, aoSessaoExpirar }: TelaMoradore
           telefoneTravado
           aoSalvar={salvarEdicao}
           aoCancelar={() => setEditando(null)}
+        />
+      )}
+
+      {inativando && (
+        <ConfirmarInativacao
+          nome={inativando.nome}
+          aoConfirmar={confirmarInativacao}
+          aoCancelar={() => setInativando(null)}
         />
       )}
     </View>

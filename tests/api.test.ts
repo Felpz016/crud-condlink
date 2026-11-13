@@ -10,6 +10,7 @@ import { afterEach, test } from 'node:test';
 process.env.EXPO_PUBLIC_API_URL = 'https://api.teste';
 const { requisicao, sessaoExpirou, mensagemDe } = await import('../src/servicos/http.ts');
 const { listarMoradores } = await import('../src/api/listarMoradores.ts');
+const { inativarMorador } = await import('../src/api/inativarMorador.ts');
 
 const fetchOriginal = globalThis.fetch;
 afterEach(() => {
@@ -92,4 +93,25 @@ test('se UM detalhe falhar, os outros aparecem (Promise.allSettled)', async () =
   assert.equal(lista[0].telefone, '33330001');
   assert.equal(lista[1].nome, 'Bia'); // veio da lista, só sem telefone
   assert.equal(lista[1].telefone, undefined);
+});
+
+test('inativarMorador manda DELETE para .../residente/<id>, com token e sem corpo', async () => {
+  let pedido: { url: string; init: RequestInit } | null = null;
+  globalThis.fetch = (async (url: string, init: RequestInit) => {
+    pedido = { url, init };
+    return resposta(200, { message: 'Residente inativado' });
+  }) as typeof fetch;
+
+  await inativarMorador(sessao, '42');
+  assert.ok(pedido);
+  const { url, init } = pedido as { url: string; init: RequestInit };
+  assert.equal(url, 'https://api.teste/app-residente-manage/v1/residente/42');
+  assert.equal(init.method, 'DELETE');
+  assert.equal(init.body, undefined);
+  assert.equal((init.headers as Record<string, string>).Authorization, 'Bearer tok');
+});
+
+test('inativar um id que não é da unidade (404) mostra a mensagem', async () => {
+  globalThis.fetch = (async () => resposta(404, {})) as typeof fetch;
+  await assert.rejects(inativarMorador(sessao, '1'), /Morador não encontrado nesta unidade/);
 });

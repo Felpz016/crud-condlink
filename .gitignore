@@ -39,3 +39,7 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# segredos: nunca vao para o GitHub
+.env
+curl/login.json

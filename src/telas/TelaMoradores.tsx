@@ -8,11 +8,13 @@ import { listarMoradores, Morador } from '../api/listarMoradores';
 import { Sessao } from '../api/login';
 import { nomeDaUnidade, Unidade } from '../api/unidade';
 import { Botao } from '../componentes/Botao';
+import { Campo } from '../componentes/Campo';
 import { CartaoMorador, telefoneDe } from '../componentes/CartaoMorador';
 import { ConfirmarInativacao } from '../componentes/ConfirmarInativacao';
 import { FormularioMorador } from '../componentes/FormularioMorador';
 import { mensagemDe, sessaoExpirou } from '../servicos/http';
 import { CORES } from '../tema';
+import { filtrarPorNome } from '../utils/filtrar';
 import { formatarCpf } from '../utils/formatar';
 
 interface TelaMoradoresProps {
@@ -33,6 +35,9 @@ export function TelaMoradores({ sessao, unidade, aoSessaoExpirar }: TelaMoradore
   // Mesma ideia: o morador cujo "Inativar" foi tocado. Se há alguém aqui,
   // a janela de confirmação está aberta.
   const [inativando, setInativando] = useState<Morador | null>(null);
+
+  // O texto digitado na busca por nome.
+  const [termo, setTermo] = useState('');
 
   async function carregar() {
     setCarregando(true);
@@ -103,18 +108,41 @@ export function TelaMoradores({ sessao, unidade, aoSessaoExpirar }: TelaMoradore
     }
   }
 
+  // A lista que aparece na tela: a que veio da API, filtrada pela busca.
+  // É calculada a cada desenho; não precisa de outro useState.
+  const visiveis = filtrarPorNome(moradores, termo);
+  const buscando = termo.trim() !== '';
+
   return (
     <View style={styles.tela}>
       <Botao rotulo="+ Cadastrar novo morador na unidade" aoTocar={() => setCadastrando(true)} />
       {erro ? <Text style={styles.erro}>{erro}</Text> : null}
 
-      {/* MUDANÇA: contador de moradores acima da lista. */}
+      {/* Desafio do PDF: busca por nome. Só aparece se há alguém para buscar. */}
+      {moradores.length > 0 ? (
+        <View style={styles.busca}>
+          <Campo
+            rotulo="Buscar por nome"
+            value={termo}
+            onChangeText={setTermo}
+            placeholder="Digite parte do nome"
+            autoCorrect={false}
+            returnKeyType="search"
+          />
+        </View>
+      ) : null}
+
+      {/* MUDANÇA: contador de moradores acima da lista ("2 de 5" durante a busca). */}
       {!carregando && moradores.length > 0 ? (
-        <Text style={styles.contador}>{contarMoradores(moradores.length)}</Text>
+        <Text style={styles.contador}>
+          {buscando
+            ? `${visiveis.length} de ${moradores.length} na busca`
+            : contarMoradores(moradores.length)}
+        </Text>
       ) : null}
 
       <FlatList
-        data={moradores}
+        data={visiveis}
         keyExtractor={(morador) => morador.id}
         refreshing={carregando}
         onRefresh={carregar}
@@ -125,7 +153,9 @@ export function TelaMoradores({ sessao, unidade, aoSessaoExpirar }: TelaMoradore
         ListEmptyComponent={
           carregando ? null : (
             <Text style={styles.vazio}>
-              Nenhum outro morador ativo em {nomeDaUnidade(unidade)}.
+              {buscando
+                ? `Ninguém com "${termo.trim()}" no nome.`
+                : `Nenhum outro morador ativo em ${nomeDaUnidade(unidade)}.`}
             </Text>
           )
         }
@@ -185,6 +215,10 @@ const styles = StyleSheet.create({
   },
   lista: {
     paddingTop: 12,
+  },
+  busca: {
+    marginTop: 12,
+    marginBottom: -14, // o Campo já tem margem embaixo; aproxima do contador
   },
   contador: {
     color: CORES.textoApagado,

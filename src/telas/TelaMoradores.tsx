@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 
+import { cadastrarMorador, DadosMorador, MORADOR_VAZIO } from '../api/cadastrarMorador';
 import { listarMoradores, Morador } from '../api/listarMoradores';
 import { Sessao } from '../api/login';
 import { nomeDaUnidade, Unidade } from '../api/unidade';
+import { Botao } from '../componentes/Botao';
 import { CartaoMorador } from '../componentes/CartaoMorador';
+import { FormularioMorador } from '../componentes/FormularioMorador';
 import { mensagemDe, sessaoExpirou } from '../servicos/http';
 import { CORES } from '../tema';
 
@@ -19,6 +22,7 @@ export function TelaMoradores({ sessao, unidade, aoSessaoExpirar }: TelaMoradore
   const [moradores, setMoradores] = useState<Morador[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
+  const [cadastrando, setCadastrando] = useState(false);
 
   async function carregar() {
     setCarregando(true);
@@ -41,8 +45,33 @@ export function TelaMoradores({ sessao, unidade, aoSessaoExpirar }: TelaMoradore
     carregar();
   }, [sessao.token]);
 
+  // MUDANÇA: toda operação que muda dados passa por aqui. Se o token venceu,
+  // volta ao login e devolve false; qualquer outro erro sobe para quem chamou
+  // (o FormularioMorador mostra a mensagem). Use também na Fase 6.
+  async function chamarApi(acao: () => Promise<unknown>): Promise<boolean> {
+    try {
+      await acao();
+      return true;
+    } catch (e) {
+      if (sessaoExpirou(e)) {
+        aoSessaoExpirar();
+        return false;
+      }
+      throw e;
+    }
+  }
+
+  // Cadastra, fecha o formulário e recarrega a lista.
+  async function salvarNovo(dados: DadosMorador) {
+    if (await chamarApi(() => cadastrarMorador(sessao, dados))) {
+      setCadastrando(false);
+      await carregar();
+    }
+  }
+
   return (
     <View style={styles.tela}>
+      <Botao rotulo="+ Cadastrar novo morador na unidade" aoTocar={() => setCadastrando(true)} />
       {erro ? <Text style={styles.erro}>{erro}</Text> : null}
 
       {/* MUDANÇA: contador de moradores acima da lista. */}
@@ -65,6 +94,16 @@ export function TelaMoradores({ sessao, unidade, aoSessaoExpirar }: TelaMoradore
           )
         }
       />
+
+      {cadastrando && (
+        <FormularioMorador
+          titulo="Novo morador"
+          unidade={unidade}
+          inicial={MORADOR_VAZIO}
+          aoSalvar={salvarNovo}
+          aoCancelar={() => setCadastrando(false)}
+        />
+      )}
     </View>
   );
 }

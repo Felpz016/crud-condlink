@@ -1,6 +1,8 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strict": true
+    "strict": true,
+    // permite o import com .ts nos testes (o Node exige a extensão)
+    "allowImportingTsExtensions": true
   }
 }

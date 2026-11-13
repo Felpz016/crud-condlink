@@ -2,14 +2,16 @@ import { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 
 import { cadastrarMorador, DadosMorador, MORADOR_VAZIO } from '../api/cadastrarMorador';
+import { editarMorador } from '../api/editarMorador';
 import { listarMoradores, Morador } from '../api/listarMoradores';
 import { Sessao } from '../api/login';
 import { nomeDaUnidade, Unidade } from '../api/unidade';
 import { Botao } from '../componentes/Botao';
-import { CartaoMorador } from '../componentes/CartaoMorador';
+import { CartaoMorador, telefoneDe } from '../componentes/CartaoMorador';
 import { FormularioMorador } from '../componentes/FormularioMorador';
 import { mensagemDe, sessaoExpirou } from '../servicos/http';
 import { CORES } from '../tema';
+import { formatarCpf } from '../utils/formatar';
 
 interface TelaMoradoresProps {
   sessao: Sessao;
@@ -23,6 +25,9 @@ export function TelaMoradores({ sessao, unidade, aoSessaoExpirar }: TelaMoradore
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
   const [cadastrando, setCadastrando] = useState(false);
+  // Guarda o morador cujo "Editar" foi tocado, ou null. Se há morador aqui,
+  // o formulário de edição está aberto; fechar é voltar a null.
+  const [editando, setEditando] = useState<Morador | null>(null);
 
   async function carregar() {
     setCarregando(true);
@@ -69,6 +74,17 @@ export function TelaMoradores({ sessao, unidade, aoSessaoExpirar }: TelaMoradore
     }
   }
 
+  async function salvarEdicao(dados: DadosMorador) {
+    if (!editando) {
+      return;
+    }
+    const id = editando.id;
+    if (await chamarApi(() => editarMorador(sessao, id, dados))) {
+      setEditando(null);
+      await carregar();
+    }
+  }
+
   return (
     <View style={styles.tela}>
       <Botao rotulo="+ Cadastrar novo morador na unidade" aoTocar={() => setCadastrando(true)} />
@@ -85,7 +101,7 @@ export function TelaMoradores({ sessao, unidade, aoSessaoExpirar }: TelaMoradore
         refreshing={carregando}
         onRefresh={carregar}
         contentContainerStyle={styles.lista}
-        renderItem={({ item }) => <CartaoMorador morador={item} />}
+        renderItem={({ item }) => <CartaoMorador morador={item} aoEditar={setEditando} />}
         ListEmptyComponent={
           carregando ? null : (
             <Text style={styles.vazio}>
@@ -104,8 +120,29 @@ export function TelaMoradores({ sessao, unidade, aoSessaoExpirar }: TelaMoradore
           aoCancelar={() => setCadastrando(false)}
         />
       )}
+
+      {editando && (
+        <FormularioMorador
+          titulo="Editar morador"
+          unidade={unidade}
+          inicial={paraFormulario(editando)}
+          telefoneTravado
+          aoSalvar={salvarEdicao}
+          aoCancelar={() => setEditando(null)}
+        />
+      )}
     </View>
   );
+}
+
+// Converte o morador que veio da API nos campos do formulário, já formatados.
+function paraFormulario(morador: Morador): DadosMorador {
+  return {
+    nome: morador.nome,
+    cpf: formatarCpf(morador.cpf ?? ''),
+    email: morador.email ?? '',
+    telefone: telefoneDe(morador),
+  };
 }
 
 // "1 morador ativo" / "3 moradores ativos": singular e plural certos.

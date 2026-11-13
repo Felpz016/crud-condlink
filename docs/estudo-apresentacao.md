@@ -10,7 +10,7 @@ O histórico do Git tem um commit por fase, como o roteiro pede (`git log --onel
 
 | Commit | O que entrou | Arquivos principais |
 | --- | --- | --- |
-| `Initial commit` | Projeto criado com `create-expo-app` (modelo `blank-typescript`, SDK 57) | `App.tsx`, `package.json` |
+| `Initial commit` | Projeto criado com `create-expo-app` (modelo `blank-typescript`) | `App.tsx`, `package.json` |
 | `fase 1` | Login com JWT, sessão guardada no cofre, função única para falar com a API | `config.ts`, `http.ts`, `jwt.ts`, `armazenamento.ts`, `api/login.ts`, `Botao`, `Campo`, `TelaLogin` |
 | `curl` | Os corpos JSON para testar o CRUD pelo terminal | `curl/*.json`, `curl/README.md` |
 | `fase 2` | A unidade do morador fixa no topo | `api/unidade.ts`, `CabecalhoUnidade` |
@@ -20,6 +20,7 @@ O histórico do Git tem um commit por fase, como o roteiro pede (`git log --onel
 | `fase 6` | Inativar morador, com confirmação | `api/inativarMorador.ts`, `ConfirmarInativacao`, estado `inativando` |
 | `desafio` | Busca por nome | `utils/filtrar.ts`, campo "Buscar por nome" |
 | `docs` | README, documentação, CI e simulador no navegador | `README.md`, `docs/`, `.github/workflows/ci.yml` |
+| `sdk 58` | Projeto atualizado do SDK 57 para o 58, o mesmo do Expo Go do celular | `package.json`, `app.json` |
 
 Em cada fase o código segue o PDF, com as mudanças da seção 4 (no código, procure o comentário `MUDANÇA`).
 
@@ -331,3 +332,9 @@ Obriga a ter uma entrada para cada variante (`primario`, `secundario`, `perigo`)
 | `({ a, ...resto })` | Tira `a` e junta o resto |
 | `import type { X }` | Importa só o tipo (some no JavaScript) |
 | `{cond && <A />}` | Desenha `A` só se `cond` for verdadeira |
+
+---
+
+## 9. Se ele perguntar sobre o SDK
+
+O roteiro manda criar o projeto com o mesmo SDK do Expo Go (57 ou 58). O projeto começou no 57 e foi atualizado para o **58** no commit `sdk 58`, porque o Expo Go do celular já estava no 58: **o Expo Go só abre projetos do SDK dele**. A atualização é feita com `npx expo install expo@^58` seguido de `npx expo install --fix`, que acerta a versão de cada biblioteca para o SDK novo. A única mudança no código foi uma linha na `TelaMoradores`: no React Native 0.88 o `ListEmptyComponent` não aceita mais `null`, então passou a receber `undefined` enquanto a lista carrega.

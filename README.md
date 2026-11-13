@@ -32,9 +32,9 @@ O morador faz login com JWT na API real da Condlink, a sessão fica guardada no 
 
 | Item | Versão |
 | --- | --- |
-| Expo | SDK 57 (o mesmo do Expo Go e da Vitrine) |
-| React Native | 0.86 |
-| React | 19.2.3 (`react-dom` preso na mesma versão) |
+| Expo | SDK 58 (o mesmo do Expo Go do celular) |
+| React Native | 0.88 |
+| React | 19.3 (`react-dom` na mesma versão) |
 | TypeScript | estrito |
 | Sessão | `expo-secure-store` (Keychain no iOS, Keystore no Android) |
 | Testes | `node:test`, o test runner do próprio Node, sem biblioteca extra |

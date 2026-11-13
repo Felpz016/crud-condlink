@@ -150,8 +150,10 @@ export function TelaMoradores({ sessao, unidade, aoSessaoExpirar }: TelaMoradore
         renderItem={({ item }) => (
           <CartaoMorador morador={item} aoEditar={setEditando} aoInativar={setInativando} />
         )}
+        // Enquanto carrega, não mostra nada (undefined). No React Native 0.88
+        // (SDK 58) esta prop não aceita mais null, só undefined.
         ListEmptyComponent={
-          carregando ? null : (
+          carregando ? undefined : (
             <Text style={styles.vazio}>
               {buscando
                 ? `Ninguém com "${termo.trim()}" no nome.`

@@ -1,7 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { nomeDaUnidade, Unidade } from '../api/unidade';
-import { CORES } from '../tema';
 
 interface CabecalhoUnidadeProps {
   nome: string;
@@ -9,7 +8,6 @@ interface CabecalhoUnidadeProps {
   aoSair: () => void;
 }
 
-// Componente controlado pelo pai: não guarda estado, só desenha o que recebe.
 export function CabecalhoUnidade({ nome, unidade, aoSair }: CabecalhoUnidadeProps) {
   return (
     <View style={styles.cabecalho}>
@@ -17,7 +15,7 @@ export function CabecalhoUnidade({ nome, unidade, aoSair }: CabecalhoUnidadeProp
         <Text style={styles.ola} numberOfLines={1}>
           Olá, {nome}
         </Text>
-        <Pressable onPress={aoSair} accessibilityRole="button" hitSlop={12}>
+        <Pressable onPress={aoSair}>
           <Text style={styles.link}>Sair</Text>
         </Pressable>
       </View>
@@ -29,7 +27,7 @@ export function CabecalhoUnidade({ nome, unidade, aoSair }: CabecalhoUnidadeProp
 
 const styles = StyleSheet.create({
   cabecalho: {
-    backgroundColor: CORES.noite,
+    backgroundColor: '#0F1B33',
     paddingTop: 52,
     paddingHorizontal: 16,
     paddingBottom: 14,
@@ -43,22 +41,22 @@ const styles = StyleSheet.create({
   },
   ola: {
     flex: 1,
-    color: CORES.borda,
+    color: '#CBD5E1',
     fontSize: 14,
   },
   condominio: {
-    color: CORES.destaque,
+    color: '#61DAFB',
     fontSize: 13,
     fontWeight: 'bold',
     marginTop: 6,
   },
   unidade: {
-    color: CORES.superficie,
+    color: '#FFFFFF',
     fontSize: 22,
     fontWeight: 'bold',
   },
   link: {
-    color: CORES.destaque,
+    color: '#61DAFB',
     fontSize: 14,
     fontWeight: 'bold',
   },

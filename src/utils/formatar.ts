@@ -32,7 +32,7 @@ export function separarTelefone(texto: string): { ddd: string; numero: string } 
   return { ddd: d.slice(0, 2), numero: d.slice(2) };
 }
 
-// MUDANÇA (desafio "Máscara enquanto digita" do PDF): o formatarCpf só formata
+// MUDANÇA 4 de 5 (desafio "Máscara enquanto digita" do PDF): o formatarCpf só formata
 // quando já há 11 dígitos. Para formatar ENQUANTO o usuário digita, a máscara
 // vai pondo ponto e traço conforme os dígitos chegam: "1112" vira "111.2".
 // Também corta no 11º dígito, então ninguém consegue digitar CPF comprido.
@@ -44,7 +44,7 @@ export function mascararCpf(texto: string): string {
   return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
 }
 
-// MUDANÇA: a mesma ideia para o telefone com DDD. "16333" vira "(16) 333";
+// MUDANÇA 4: a mesma ideia para o telefone com DDD. "16333" vira "(16) 333";
 // com 10 dígitos, "(16) 3333-4444"; com 11 (celular), "(16) 99999-8888".
 export function mascararTelefone(texto: string): string {
   const d = somenteDigitos(texto).slice(0, 11);

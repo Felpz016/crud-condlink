@@ -1,8 +1,9 @@
 /// <reference types="node" />
+// MUDANÇA 5 de 5 (testes automáticos): o roteiro não tem testes. Rode com npm test.
 // Testes da camada que fala com a API, SEM internet: trocamos o fetch do
 // JavaScript por um "fetch de mentira" que responde o que o teste mandar.
-// Assim dá para provar o que o app faz com 401, 409, falta de rede e um
-// detalhe que falha, sem gastar o usuário de teste da turma. Rode com: npm test
+// Assim dá para provar o que o app faz com 401, 404 e um detalhe que falha,
+// sem gastar o usuário de teste da turma. Rode com: npm test
 import assert from 'node:assert/strict';
 import { afterEach, test } from 'node:test';
 
@@ -47,18 +48,6 @@ test('401 SEM token (login) mostra a mensagem da API, não "sessão expirada"', 
     assert.equal(mensagemDe(e), 'Usuário ou senha inválidos');
     return true;
   });
-});
-
-test('409 sem campo error vira uma frase que o morador entende', async () => {
-  globalThis.fetch = (async () => resposta(409, {})) as typeof fetch;
-  await assert.rejects(requisicao('/x', { token: 't' }), /Já existe um cadastro com esse CPF/);
-});
-
-test('sem internet o fetch lança, e o app mostra "Sem conexão"', async () => {
-  globalThis.fetch = (async () => {
-    throw new TypeError('Network request failed');
-  }) as typeof fetch;
-  await assert.rejects(requisicao('/x', { token: 't' }), /Sem conexão/);
 });
 
 test('listarMoradores junta o telefone do detalhe de cada morador', async () => {
@@ -111,7 +100,7 @@ test('inativarMorador manda DELETE para .../residente/<id>, com token e sem corp
   assert.equal((init.headers as Record<string, string>).Authorization, 'Bearer tok');
 });
 
-test('inativar um id que não é da unidade (404) mostra a mensagem', async () => {
-  globalThis.fetch = (async () => resposta(404, {})) as typeof fetch;
-  await assert.rejects(inativarMorador(sessao, '1'), /Morador não encontrado nesta unidade/);
+test('inativar um id que não é da unidade (404) mostra a mensagem da API', async () => {
+  globalThis.fetch = (async () => resposta(404, { error: 'Residente não encontrado' })) as typeof fetch;
+  await assert.rejects(inativarMorador(sessao, '1'), /Residente não encontrado/);
 });

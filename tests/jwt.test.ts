@@ -1,4 +1,5 @@
 /// <reference types="node" />
+// MUDANÇA 5 de 5 (testes automáticos): o roteiro não tem testes. Rode com npm test.
 // Testes de src/servicos/jwt.ts com o test runner do próprio Node (node:test).
 // Rode com: npm test
 import assert from 'node:assert/strict';

@@ -4,9 +4,7 @@ import { Modal, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { DadosMorador } from '../api/cadastrarMorador';
 import { nomeDaUnidade, Unidade } from '../api/unidade';
 import { mensagemDe } from '../servicos/http';
-import { CORES } from '../tema';
-import { mascararCpf, mascararTelefone } from '../utils/formatar';
-import { validarMorador } from '../utils/validar';
+import { mascararCpf, mascararTelefone, somenteDigitos } from '../utils/formatar';
 import { Botao } from './Botao';
 import { Campo } from './Campo';
 
@@ -19,8 +17,6 @@ interface FormularioMoradorProps {
   aoCancelar: () => void;
 }
 
-// O mesmo formulário serve para cadastrar (fase 4) e editar (fase 5):
-// o que muda vem por props.
 export function FormularioMorador(props: FormularioMoradorProps) {
   const { titulo, unidade, inicial, telefoneTravado = false, aoSalvar, aoCancelar } = props;
   const [dados, setDados] = useState<DadosMorador>(inicial);
@@ -33,7 +29,7 @@ export function FormularioMorador(props: FormularioMoradorProps) {
   }
 
   async function salvar() {
-    const problema = validarMorador(dados, telefoneTravado);
+    const problema = validar(dados, telefoneTravado);
     if (problema) {
       setErro(problema);
       return;
@@ -43,7 +39,6 @@ export function FormularioMorador(props: FormularioMoradorProps) {
     try {
       await aoSalvar(dados);
     } catch (e) {
-      // A API recusou (409, 400...): mostra aqui e o usuário não perde o que digitou.
       setErro(mensagemDe(e));
       setSalvando(false);
     }
@@ -51,7 +46,10 @@ export function FormularioMorador(props: FormularioMoradorProps) {
 
   return (
     <Modal visible animationType="slide" onRequestClose={aoCancelar}>
-      <ScrollView contentContainerStyle={styles.conteudo} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={styles.conteudo}
+        keyboardShouldPersistTaps="handled"
+      >
         <Text style={styles.titulo}>{titulo}</Text>
 
         <Campo rotulo="Unidade" value={nomeDaUnidade(unidade)} editable={false} />
@@ -59,11 +57,10 @@ export function FormularioMorador(props: FormularioMoradorProps) {
         <Campo
           rotulo="CPF"
           value={dados.cpf}
-          // MUDANÇA (desafio do PDF): a máscara põe pontos e traço enquanto digita.
+          // MUDANÇA 4: o PDF faz alterar('cpf', v); a máscara põe pontos e traço enquanto digita.
           onChangeText={(v) => alterar('cpf', mascararCpf(v))}
           keyboardType="number-pad"
           placeholder="000.000.000-00"
-          maxLength={14}
         />
         <Campo
           rotulo="E-mail"
@@ -71,16 +68,14 @@ export function FormularioMorador(props: FormularioMoradorProps) {
           onChangeText={(v) => alterar('email', v)}
           keyboardType="email-address"
           autoCapitalize="none"
-          autoCorrect={false}
         />
         <Campo
           rotulo="Telefone"
           value={dados.telefone}
-          // MUDANÇA: máscara também no telefone: (16) 3333-4444 ou (16) 99999-8888.
+          // MUDANÇA 4: máscara também no telefone: (16) 3333-4444 ou (16) 99999-8888.
           onChangeText={(v) => alterar('telefone', mascararTelefone(v))}
           keyboardType="phone-pad"
           placeholder="(16) 3333-4444"
-          maxLength={15}
           editable={!telefoneTravado}
         />
         {telefoneTravado ? (
@@ -102,27 +97,45 @@ export function FormularioMorador(props: FormularioMoradorProps) {
   );
 }
 
+// Devolve o primeiro problema encontrado, ou texto vazio se está tudo certo.
+function validar(dados: DadosMorador, telefoneTravado: boolean): string {
+  if (dados.nome.trim().length < 3) {
+    return 'Informe o nome completo.';
+  }
+  if (somenteDigitos(dados.cpf).length !== 11) {
+    return 'O CPF precisa ter 11 dígitos.';
+  }
+  if (dados.email && !dados.email.includes('@')) {
+    return 'E-mail inválido.';
+  }
+  const digitos = somenteDigitos(dados.telefone).length;
+  if (!telefoneTravado && digitos > 0 && (digitos < 10 || digitos > 11)) {
+    return 'Telefone com DDD: 10 ou 11 dígitos.';
+  }
+  return '';
+}
+
 const styles = StyleSheet.create({
   conteudo: {
     padding: 24,
     paddingTop: 56,
-    backgroundColor: CORES.fundo,
+    backgroundColor: '#F1F5F9',
     flexGrow: 1,
   },
   titulo: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: CORES.noite,
+    color: '#0F1B33',
     marginBottom: 20,
   },
   aviso: {
-    color: CORES.textoApagado,
+    color: '#64748B',
     fontSize: 13,
     marginTop: -8,
     marginBottom: 14,
   },
   erro: {
-    color: CORES.perigo,
+    color: '#DC2626',
     marginBottom: 12,
   },
   botoes: {

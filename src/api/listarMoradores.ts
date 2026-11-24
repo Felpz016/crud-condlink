@@ -28,7 +28,7 @@ export async function listarMoradores(sessao: Sessao): Promise<Morador[]> {
   // A lista não traz o telefone; o detalhe de cada morador traz.
   // Os pedidos de detalhe saem TODOS AO MESMO TEMPO.
   //
-  // MUDANÇA em relação ao roteiro: o PDF usa Promise.all, que falha INTEIRO se
+  // MUDANÇA 2 de 5: o PDF usa Promise.all, que falha INTEIRO se
   // um único detalhe falhar (a tela mostraria só o erro, sem lista nenhuma).
   // O Promise.allSettled espera todos e diz, para cada um, se deu certo
   // ("fulfilled") ou não ("rejected"). Quem falhou aparece com os dados da

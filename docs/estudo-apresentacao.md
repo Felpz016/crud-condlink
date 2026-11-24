@@ -14,15 +14,15 @@ O histórico do Git tem um commit por fase, como o roteiro pede (`git log --onel
 | `fase 1` | Login com JWT, sessão guardada no cofre, função única para falar com a API | `config.ts`, `http.ts`, `jwt.ts`, `armazenamento.ts`, `api/login.ts`, `Botao`, `Campo`, `TelaLogin` |
 | `curl` | Os corpos JSON para testar o CRUD pelo terminal | `curl/*.json`, `curl/README.md` |
 | `fase 2` | A unidade do morador fixa no topo | `api/unidade.ts`, `CabecalhoUnidade` |
-| `fase 3` | Lista de moradores (com telefone vindo do detalhe) | `utils/formatar.ts`, `api/listarMoradores.ts`, `CartaoMorador`, `TelaMoradores` |
-| `fase 4` | Cadastrar morador | `api/cadastrarMorador.ts`, `utils/validar.ts`, `FormularioMorador` |
+| `fase 3` | Lista de moradores (com telefone vindo do detalhe) | `utils/formatar.ts`, `api/listarMoradores.ts`, `TelaMoradores` |
+| `fase 4` | Cadastrar morador | `api/cadastrarMorador.ts`, `FormularioMorador` |
 | `fase 5` | Editar morador (telefone travado) | `api/editarMorador.ts`, estado `editando` |
 | `fase 6` | Inativar morador, com confirmação | `api/inativarMorador.ts`, `ConfirmarInativacao`, estado `inativando` |
-| `desafio` | Busca por nome | `utils/filtrar.ts`, campo "Buscar por nome" |
-| `docs` | README, documentação, CI e simulador no navegador | `README.md`, `docs/`, `.github/workflows/ci.yml` |
+| `desafio` e `docs` | Uma busca por nome, README, documentação, CI e simulador no navegador | `README.md`, `docs/`, `.github/workflows/ci.yml` |
 | `sdk 58` | Projeto atualizado do SDK 57 para o 58, o mesmo do Expo Go do celular | `package.json`, `app.json` |
+| `reduz para 5 mudancas` | Tudo que não é uma das 5 mudanças voltou a ser o código do PDF (a busca saiu junto) | vários |
 
-Em cada fase o código segue o PDF, com as mudanças da seção 4 (no código, procure o comentário `MUDANÇA`).
+O código final é o do PDF com **exatamente 5 mudanças** (seção 4). No código, procure o comentário `MUDANÇA N de 5`.
 
 ---
 
@@ -41,17 +41,18 @@ Deixe aberto antes: o app no celular (Expo Go), o VS Code no projeto, e um Power
 | # | Mostre | Diga | Arquivo para abrir se ele pedir |
 | --- | --- | --- | --- |
 | 1 | Toque em Entrar com os campos vazios | "Valido antes de chamar a API." | `src/telas/TelaLogin.tsx` |
-| 2 | Toque em **Mostrar** na senha, depois entre | "O token vem da API; leio o condomínio de dentro dele." | `src/api/login.ts`, `src/servicos/jwt.ts` |
+| 2 | Entre com o usuário de teste | "O token vem da API; leio o condomínio de dentro dele. Corrigi um bug do roteiro aqui: nome com acento saía errado." | `src/api/login.ts`, `src/servicos/jwt.ts` (mudança 1) |
 | 3 | Feche o Expo Go e abra de novo | "Entrei direto: a sessão estava no SecureStore, e o token ainda não venceu." | `App.tsx` (`restaurar`) |
 | 4 | O topo com condomínio e unidade | "A unidade vem do `app-pessoa-me`, não sou eu que escolho." | `src/api/unidade.ts` |
-| 5 | A lista, e puxe para atualizar | "A lista não traz telefone; busco o detalhe de todos ao mesmo tempo." | `src/api/listarMoradores.ts` |
-| 6 | Cadastre "Teste Felipe N", digitando o CPF | "A máscara põe os pontos sozinha. O app não manda a unidade: a API tira do token." | `FormularioMorador.tsx`, `formatar.ts` |
-| 7 | Tente cadastrar o mesmo CPF de novo | "A API responde 409, e o formulário mostra o erro sem perder o que digitei." | `servicos/http.ts` |
+| 5 | A lista, e puxe para atualizar | "A lista não traz telefone; busco o detalhe de todos ao mesmo tempo. Se um falhar, só ele fica sem telefone." | `src/api/listarMoradores.ts` (mudança 2) |
+| 6 | Cadastre "Teste Felipe N", digitando o CPF e o telefone | "A máscara põe os pontos sozinha. O app não manda a unidade: a API tira do token." | `FormularioMorador.tsx`, `formatar.ts` (mudança 4) |
+| 7 | Tente cadastrar o mesmo CPF de novo | "A API responde 409, e o formulário mostra o erro dela sem perder o que digitei." | `servicos/http.ts` |
 | 8 | Edite o nome; mostre o telefone travado | "A edição desta API ignora telefone, então travei o campo." | `editarMorador.ts` |
-| 9 | Digite `ana` (ou `joao`, sem acento) na busca | "Filtra na hora, sem chamar a API: a lista já está no celular. Ignora maiúscula e acento." | `utils/filtrar.ts` |
-| 10 | Inative, primeiro cancelando, depois confirmando | "Ação destrutiva pede confirmação. Ele some da lista..." | `ConfirmarInativacao.tsx` |
-| 11 | No PowerShell: `curl.exe -s "$URL$ID" -H $H` | "...mas continua no banco com `ativo: false`." | `curl/README.md` |
-| 12 | No terminal: `npm test` | "34 testes rodando sem internet, com a API simulada." | `tests/api.test.ts` |
+| 9 | Inative, primeiro cancelando, depois confirmando | "Ação destrutiva pede confirmação. Ele some da lista..." | `ConfirmarInativacao.tsx` |
+| 10 | No PowerShell: `curl.exe -s "$URL$ID" -H $H` | "...mas continua no banco com `ativo: false`." | `curl/README.md` |
+| 11 | No terminal: `npm test` | "22 testes rodando sem internet, com a API simulada." | `tests/api.test.ts` (mudança 5) |
+
+A mudança 3 (sessão vencida) é difícil de mostrar ao vivo, porque o token demora para vencer. Se ele pedir, mostre a imagem `docs/img/10-sessao-expirada.png` e o teste "401 com token é sessão expirada" em `tests/api.test.ts`.
 
 Antes de sair, **inative os moradores de teste**: a unidade é da turma toda.
 
@@ -97,7 +98,7 @@ A lista não traz telefone, o detalhe traz. Buscar um por um com `await` dentro 
 - `useEffect(() => {...}, [sessao])`: roda de novo **sempre que a sessão mudar** (é onde busco a unidade depois do login).
 
 ### Componente, props e "o pai decide"
-O `CabecalhoUnidade` e o `CartaoMorador` não guardam estado: recebem dados e funções por **props** e só desenham. Quando o usuário toca em "Editar", o cartão **avisa** o pai (`aoEditar(morador)`), e é a `TelaMoradores` que decide o que fazer. Isso é o mesmo padrão do `aoTocar` do `Botao`.
+O `CabecalhoUnidade` e o `ConfirmarInativacao` não decidem nada sozinhos: recebem dados e funções por **props**. Quando o usuário toca em "Sair" ou "Inativar", o componente **avisa** o pai (`aoSair()`, `aoConfirmar()`), e é o pai que decide o que fazer. Isso é o mesmo padrão do `aoTocar` do `Botao`.
 
 ### Formulário controlado
 Os campos do morador ficam num único estado, um objeto `DadosMorador`. Cada campo mostra uma chave do objeto e, a cada letra, troca só aquela chave: `setDados({ ...dados, [campo]: valor })`. O `...dados` copia o objeto; o `[campo]` usa o **valor** da variável como nome da chave.
@@ -128,62 +129,88 @@ Ferramenta para responder "o problema está no app ou na API?". Se o curl funcio
 
 ---
 
-## 4. O que eu mudei em relação ao código do PDF
+## 4. As 5 mudanças em relação ao código do PDF
 
-O professor deu o código; o que vale ponto é saber **por que** algo é diferente. Para cada mudança: o que é, e a frase para explicar. No código, todas estão com o comentário `MUDANÇA`.
+O professor deu o código; o que vale ponto é saber **por que** algo é diferente. Fiz só 5 mudanças, e o resto é o código do roteiro, com os mesmos nomes. No código, cada uma está com o comentário `MUDANÇA N de 5`.
 
-1. **Corrigi um bug do roteiro no `lerClaims`** (`jwt.ts`).
-   "O `atob` devolve bytes, um caractere por byte. Letra com acento ocupa dois bytes em UTF-8, então 'João' saía 'JoÃ£o'. Eu converto os bytes de volta em texto com `decodeURIComponent`. Quem achou o bug foi um teste automático."
+| # | Mudança | Tipo |
+| --- | --- | --- |
+| 1 | Bug do acento no `lerClaims` | Correção de bug |
+| 2 | `Promise.allSettled` na lista | Robustez |
+| 3 | Sessão vencida volta sozinha ao login | Desafio do PDF |
+| 4 | Máscara de CPF e telefone | Desafio do PDF |
+| 5 | Testes automáticos e CI | Qualidade |
 
-2. **`Promise.allSettled` no lugar do `Promise.all`** (`listarMoradores.ts`).
-   "Se um único detalhe falhasse, a tela inteira mostrava só o erro. Agora uma linha ruim não derruba as outras."
+### Mudança 1: bug do acento no `lerClaims` (`servicos/jwt.ts`)
 
-3. **Sessão vencida volta sozinha para o login** (`http.ts`, `App.tsx`, `TelaMoradores.tsx`).
-   "O erro de 401 com token ganhou um nome (`SessaoExpirada`). A função `sessaoExpirou(erro)` reconhece esse erro, e aí o App apaga a sessão e mostra o login com o aviso. Na tela de moradores, toda operação passa por `chamarApi`, que faz isso num lugar só." (Era um desafio do PDF.)
+"O `atob` devolve bytes, um caractere por byte. Letra com acento ocupa dois bytes em UTF-8, então 'João' saía 'JoÃ£o'. Eu converto os bytes de volta em texto com `decodeURIComponent`. Quem achou o bug foi um teste automático."
 
-4. **Mensagens de erro que o morador entende** (`http.ts`).
-   "Se a API não manda o campo `error`, eu mostro uma frase pelo status: 409 vira 'Já existe um cadastro com esse CPF', 429 vira 'Tentativas demais'. Sem internet, o `fetch` nem tem resposta, ele lança um erro; eu troco por 'Sem conexão'."
+```ts
+return JSON.parse(textoUtf8(atob(completo)));   // o PDF faz JSON.parse(atob(completo))
+```
 
-5. **Máscara de CPF e telefone enquanto digita** (`formatar.ts`, `FormularioMorador.tsx`).
-   "O `formatarCpf` do PDF só formata com 11 dígitos. A máscara vai pondo ponto e traço conforme os dígitos chegam, e corta no 11º." (Desafio do PDF.)
+A `textoUtf8` transforma cada byte em `%XX` (o `ã` vira `%C3%A3`) e o `decodeURIComponent` junta os dois bytes de volta numa letra só.
 
-6. **Validação num arquivo separado** (`utils/validar.ts`).
-   "No PDF ela ficava dentro do componente. Separada e sem React, eu consigo testar. E o e-mail agora precisa ter formato `algo@algo.algo`: o PDF aceitava `a@`."
+### Mudança 2: `Promise.allSettled` no lugar do `Promise.all` (`api/listarMoradores.ts`)
 
-7. **`CartaoMorador` virou componente** (`componentes/CartaoMorador.tsx`).
-   "No PDF o cartão ficava dentro do `renderItem` e crescia a cada fase. Separei: a tela cuida dos dados, o cartão de desenhar e avisar qual botão foi tocado."
+"Se um único detalhe falhasse, a tela inteira mostrava só o erro. Agora uma linha ruim não derruba as outras: quem falhou aparece com 'Telefone: -'."
 
-8. **Cores num arquivo só** (`src/tema.ts`).
-   "Para mudar o azul do app inteiro, troco uma linha. É a mesma ideia dos tokens da Vitrine."
+```ts
+const detalhes = await Promise.allSettled(resposta.data.map((m) => buscarMorador(sessao, m.id)));
+return detalhes.map((r, i) => (r.status === 'fulfilled' ? r.value : resposta.data[i]));
+```
 
-9. **Senha com Mostrar/Ocultar e Enter entra** (`Campo.tsx`, `TelaLogin.tsx`).
-   "O `Campo` ganhou a prop `senha`; o `secureTextEntry` liga ou desliga conforme o estado `visivel`."
+Se deu certo (`fulfilled`), uso o detalhe; se não, uso o item da lista, que não tem telefone.
 
-10. **Contador de moradores**, **sessão estragada não trava o app**, **acessibilidade** nos botões.
+### Mudança 3: sessão vencida volta sozinha ao login (desafio do PDF)
 
-11. **Testes automáticos** (`tests/`, `npm test`) **e CI no GitHub**.
-    "São 34 testes que rodam sem internet: troco o `fetch` por um falso que responde 401, 409 ou cai a rede, e confiro o que o app faz. Não gasto o usuário de teste da turma, que bloqueia com 5 erros."
+No roteiro, quando o token vencia, aparecia "Sessão expirada" e o morador tinha de achar o botão Sair. Agora o app volta sozinho para o login com o aviso "Sua sessão expirou. Entre de novo.".
 
-12. **Fase 6 adaptada à estrutura nova**: o botão Inativar mora no `CartaoMorador`, a janela usa as cores do tema e a chamada passa pelo `chamarApi` (detalhes na seção 5).
+O caminho tem quatro peças:
+1. **`servicos/http.ts`**: o erro do 401 com token ganha um nome, `erro.name = 'SessaoExpirada'`, e a função `sessaoExpirou(erro)` reconhece esse erro.
+2. **`telas/TelaMoradores.tsx`**: toda operação (cadastrar, editar, inativar) passa por `chamarApi`. Se o erro for de sessão, ela chama a prop `aoSessaoExpirar()`; qualquer outro erro ela deixa passar, e o formulário ou a janela mostram a mensagem. O `carregar` da lista faz o mesmo.
+3. **`App.tsx`**: a `sessaoVenceu()` guarda o aviso e chama `sair()`, que apaga a sessão do cofre. Sem sessão, o App mostra o login.
+4. **`telas/TelaLogin.tsx`**: ganhou a prop `aviso`, que mostra a mensagem numa caixa cinza acima dos campos.
 
-13. **Busca por nome** (desafio do PDF): filtra na memória, sem maiúscula e sem acento (seção 5).
+"Por que um nome no erro e não comparar a mensagem? Porque a mensagem é para pessoas e pode mudar de texto; o nome é para o código."
 
-**O que eu não fiz de propósito**: validar os dígitos verificadores do CPF. "O roteiro manda usar CPF inventado. Com a validação, só passariam CPFs com dígitos certos, e um número assim pode ser de alguém de verdade."
+### Mudança 4: máscara de CPF e telefone (desafio do PDF)
+
+"O `formatarCpf` do PDF só formata com 11 dígitos prontos. A máscara vai pondo ponto e traço conforme os dígitos chegam, e corta no 11º."
+
+Em `utils/formatar.ts` entraram `mascararCpf` e `mascararTelefone`; no `FormularioMorador`, cada campo passa o texto pela máscara antes de guardar: `alterar('cpf', mascararCpf(v))`. Na hora de enviar, o app tira a máscara de novo, porque a API quer só os números.
+
+### Mudança 5: testes automáticos e CI (`tests/`, `.github/workflows/ci.yml`)
+
+"São 22 testes que rodam sem internet com o `node:test`, o test runner do próprio Node. Na parte da API, troco o `fetch` por um falso que responde o que eu quiser (200, 401, 404) e confiro o que o app faz. Assim não gasto o usuário de teste da turma, que bloqueia com 5 senhas erradas. O GitHub roda o `npm run check` e o `npm test` a cada push."
+
+| Arquivo | Testes | O que prova |
+| --- | --- | --- |
+| `jwt.test.ts` | 5 | Claims com acento (o teste que achou o bug da mudança 1), token vencido, sem `exp`, texto que não é token |
+| `unidade.test.ts` | 3 | "Bloco A - Apto 102", só apartamento, "Unidade 404" |
+| `formatar.test.ts` | 7 | Formatar, separar e as máscaras da mudança 4 (inclusive apagando) |
+| `api.test.ts` | 7 | Token no cabeçalho, 401 com e sem token (mudança 3), o `allSettled` (mudança 2), DELETE do inativar e o 404 |
+
+### O que ficou igual ao PDF de propósito
+
+- Validação do formulário dentro do `FormularioMorador` (o e-mail só precisa ter `@`), cartão do morador dentro do `renderItem`, cores escritas em cada arquivo.
+- Sem busca por nome, sem contador e sem botão Mostrar senha.
+- **Não validei os dígitos verificadores do CPF** (outro desafio do PDF). "O roteiro manda usar CPF inventado. Com a validação, só passariam CPFs com dígitos certos, e um número assim pode ser de alguém de verdade."
+
+O **SDK 58** não conta como mudança: só acompanha o Expo Go do celular (seção 9).
 
 ---
 
-## 5. Fase 6 e busca: como funcionam
+## 5. Fase 6: inativar (o "D" do CRUD)
 
-São as duas partes mais prováveis de ele pedir para você explicar linha por linha, porque fecham o CRUD.
-
-### Fase 6: inativar (o "D" do CRUD)
+É a parte mais provável de ele pedir para você explicar linha por linha, porque fecha o CRUD.
 
 O caminho de um toque em **Inativar**:
 
 ```
-CartaoMorador          toque em "Inativar" → aoInativar(morador)
+renderItem             toque em "Inativar" → setInativando(item)
    │
-TelaMoradores          setInativando(morador) → a janela aparece
+TelaMoradores          inativando tem alguém → a janela aparece
    │
 ConfirmarInativacao    toque em "Inativar" (vermelho) → aoConfirmar()
    │
@@ -198,46 +225,15 @@ TelaMoradores          setInativando(null) fecha a janela; carregar() recarrega 
 
 **`src/api/inativarMorador.ts`**: manda um `DELETE` para `ROTAS.residentes + idMorador`, com o token e **sem corpo**. É quase igual ao `editarMorador`: mesmo endereço, outro método. "Numa API REST, o endereço diz **qual** morador e o método diz **o que fazer** com ele."
 
-**`src/componentes/ConfirmarInativacao.tsx`**: um `Modal` com `transparent`, então a lista continua aparecendo atrás, escurecida pela cor `CORES.sombra`. Ele guarda dois estados só dele: `inativando` (para o botão vermelho girar enquanto espera a API) e `erro`. Se a API recusar, o `catch` mostra a mensagem **dentro da janela**, e ela continua aberta. Se der certo, quem fecha é o pai.
-
-**`src/componentes/CartaoMorador.tsx`**: ganhou a prop `aoInativar`, no mesmo formato da `aoEditar`. O cartão não sabe o que acontece depois do toque: só **avisa o pai** qual morador foi tocado.
+**`src/componentes/ConfirmarInativacao.tsx`**: um `Modal` com `transparent`, então a lista continua aparecendo atrás, escurecida. Ele guarda dois estados só dele: `inativando` (para o botão vermelho girar enquanto espera a API) e `erro`. Se a API recusar, o `catch` mostra a mensagem **dentro da janela**, e ela continua aberta. Se der certo, quem fecha é o pai.
 
 **`src/telas/TelaMoradores.tsx`**:
 - `const [inativando, setInativando] = useState<Morador | null>(null)`: igual ao `editando`. Se há morador ali, a janela está aberta; `null` fecha.
-- `aoInativar={setInativando}`: passo a própria função `set` como prop. Quando o cartão chama `aoInativar(morador)`, é o mesmo que `setInativando(morador)`.
+- No `renderItem`, o botão Inativar chama `setInativando(item)`, ao lado do Editar.
 - `confirmarInativacao()`: confere se há alguém em `inativando` (o TypeScript passa a saber que não é `null`), guarda o `id`, chama `inativarMorador` **pelo `chamarApi`**, e, se deu certo, fecha a janela e recarrega a lista.
 - `{inativando && (<ConfirmarInativacao ... />)}`: renderização condicional. A janela só existe enquanto `inativando` tem alguém.
 
-**Por que pelo `chamarApi`?** "Se o token vencer bem na hora de inativar, o `chamarApi` reconhece o erro de sessão expirada e volta para o login. Qualquer outro erro, como um 404, ele deixa passar, e a janela mostra a mensagem."
-
-**O que muda em relação ao PDF**: no PDF o botão Inativar fica dentro do `renderItem` da tela; aqui fica no `CartaoMorador`. As cores vêm do `tema.ts`, e a chamada passa pelo `chamarApi`. A ideia (estado com o item escolhido, `Modal transparent`, `DELETE` sem corpo) é a mesma.
-
-### Busca por nome (desafio do PDF)
-
-**`src/utils/filtrar.ts`**: `filtrarPorNome(moradores, termo)` devolve só quem tem o termo no nome. Três regras, cada uma com teste em `tests/filtrar.test.ts`:
-1. termo vazio (ou só espaços) devolve todo mundo;
-2. não diferencia maiúscula de minúscula;
-3. ignora acento: `joao` acha `João`.
-
-O truque está na função `simplificar`, usada **nos dois lados** da comparação (no nome e no termo):
-
-```ts
-texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
-```
-
-"O `normalize('NFD')` separa a letra do acento: o `ã` vira `a` mais um `~` solto. O `replace` apaga esses acentos soltos, que no Unicode ficam na faixa de `0300` a `036f`. Depois é só passar para minúsculas e comparar com `includes`."
-
-**Na tela**: um estado `termo` ligado a um `Campo` "Buscar por nome". A lista que aparece é calculada a cada desenho:
-
-```ts
-const visiveis = filtrarPorNome(moradores, termo);
-```
-
-"Não precisa de outro `useState` para a lista filtrada: ela **deriva** de dois estados que já existem. Se eu guardasse a lista filtrada num estado, teria de lembrar de atualizar os dois juntos."
-
-**Por que não chama a API de novo?** "A lista inteira já está na memória do celular. Filtrar ali é instantâneo, funciona sem internet e não gasta requisição."
-
-Detalhes de tela: o contador vira "1 de 3 na busca" e, se ninguém tiver aquele nome, a lista vazia diz `Ninguém com "zzz" no nome.` em vez de "Nenhum outro morador ativo".
+**Por que pelo `chamarApi`?** "É a mudança 3. Se o token vencer bem na hora de inativar, o `chamarApi` reconhece o erro de sessão expirada e volta para o login. Qualquer outro erro, como um 404, ele deixa passar, e a janela mostra a mensagem."
 
 ---
 
@@ -268,7 +264,7 @@ Roda depois do desenho e de novo toda vez que a `sessao` mudar. É ali que, depo
 Dentro da função `async`, o TypeScript não tem certeza de que `sessao` continua não-nula. Guardando numa constante depois do `if (!sessao) return`, ele sabe.
 
 **O que acontece se a internet cair no meio?**
-O `fetch` lança um erro antes de ter resposta; a `requisicao` troca por "Sem conexão com a Condlink" e a tela mostra. Puxar a lista tenta de novo.
+O `fetch` lança um erro antes de ter resposta, o `catch` da tela pega e mostra a mensagem dele (é o código do PDF; não mexi nisso). Puxar a lista tenta de novo.
 
 **Por que separar `src/api`, `src/servicos`, `src/componentes` e `src/telas`?**
 Cada camada conversa só com a vizinha. A tela não sabe que existe HTTP; a `requisicao` não sabe que existe tela. Se a Condlink mudar uma rota, mudo só o `config.ts`.
@@ -286,31 +282,28 @@ Obriga a ter uma entrada para cada variante (`primario`, `secundario`, `perigo`)
 
 ## 7. Cola: arquivo por arquivo
 
-| Arquivo | Em uma frase |
-| --- | --- |
-| `App.tsx` | Decide a tela: girando, login, girando a unidade, ou cabeçalho + moradores. |
-| `src/config.ts` | Endereço da API (do `.env`) e as três rotas. |
-| `src/tema.ts` | Todas as cores. |
-| `src/servicos/http.ts` | A única função que faz `fetch`: token, JSON e erros. |
-| `src/servicos/jwt.ts` | Lê o meio do token e diz se venceu. |
-| `src/servicos/armazenamento.ts` | Salva, lê e apaga a sessão no cofre (ou no `localStorage` na web). |
-| `src/api/login.ts` | POST do login; tira o condomínio do token. |
-| `src/api/unidade.ts` | GET de "quem sou eu" e o texto "Bloco A - Apto 102". |
-| `src/api/listarMoradores.ts` | GET da lista + detalhes ao mesmo tempo. |
-| `src/api/cadastrarMorador.ts` | POST; username é o CPF, senha provisória sorteada. |
-| `src/api/editarMorador.ts` | PUT parcial, sem telefone. |
-| `src/api/inativarMorador.ts` | DELETE sem corpo (exclusão lógica). |
-| `src/telas/TelaLogin.tsx` | Usuário, senha, Entrar. |
-| `src/telas/TelaMoradores.tsx` | Lista, busca e os estados `cadastrando`, `editando`, `inativando`. |
-| `src/componentes/Botao.tsx` | Botão com três variantes e o girando. |
-| `src/componentes/Campo.tsx` | Rótulo + TextInput, com o Mostrar/Ocultar de senha. |
-| `src/componentes/CabecalhoUnidade.tsx` | Topo escuro com o nome, o condomínio e a unidade. |
-| `src/componentes/CartaoMorador.tsx` | Um morador e os botões Editar e Inativar. |
-| `src/componentes/FormularioMorador.tsx` | Modal de cadastrar/editar, com máscaras. |
-| `src/componentes/ConfirmarInativacao.tsx` | "Inativar morador?", com Cancelar e o botão vermelho. |
-| `src/utils/formatar.ts` | CPF e telefone: formatar, separar, mascarar. |
-| `src/utils/validar.ts` | O primeiro problema do formulário, ou vazio. |
-| `src/utils/filtrar.ts` | Busca por nome, sem maiúscula e sem acento. |
+| Arquivo | Em uma frase | Mudança |
+| --- | --- | --- |
+| `App.tsx` | Decide a tela: girando, login, girando a unidade, ou cabeçalho + moradores. | 3 (`sessaoVenceu`) |
+| `src/config.ts` | Endereço da API (do `.env`) e as três rotas. | |
+| `src/servicos/http.ts` | A única função que faz `fetch`: token, JSON e erros. | 3 (`sessaoExpirou`) |
+| `src/servicos/jwt.ts` | Lê o meio do token e diz se venceu. | 1 (`textoUtf8`) |
+| `src/servicos/armazenamento.ts` | Salva, lê e apaga a sessão no cofre (ou no `localStorage` na web). | |
+| `src/api/login.ts` | POST do login; tira o condomínio do token. | |
+| `src/api/unidade.ts` | GET de "quem sou eu" e o texto "Bloco A - Apto 102". | |
+| `src/api/listarMoradores.ts` | GET da lista + detalhes ao mesmo tempo. | 2 (`allSettled`) |
+| `src/api/cadastrarMorador.ts` | POST; username é o CPF, senha provisória sorteada. | |
+| `src/api/editarMorador.ts` | PUT parcial, sem telefone. | |
+| `src/api/inativarMorador.ts` | DELETE sem corpo (exclusão lógica). | |
+| `src/telas/TelaLogin.tsx` | Usuário, senha, Entrar. | 3 (prop `aviso`) |
+| `src/telas/TelaMoradores.tsx` | Lista com o cartão no `renderItem`, e os estados `cadastrando`, `editando`, `inativando`. | 3 (`chamarApi`) |
+| `src/componentes/Botao.tsx` | Botão com três variantes e o girando. | |
+| `src/componentes/Campo.tsx` | Rótulo + TextInput. | |
+| `src/componentes/CabecalhoUnidade.tsx` | Topo escuro com o nome, o condomínio e a unidade. | |
+| `src/componentes/FormularioMorador.tsx` | Modal de cadastrar/editar, com a validação. | 4 (máscaras) |
+| `src/componentes/ConfirmarInativacao.tsx` | "Inativar morador?", com Cancelar e o botão vermelho. | |
+| `src/utils/formatar.ts` | CPF e telefone: formatar, separar, mascarar. | 4 (`mascararCpf`, `mascararTelefone`) |
+| `tests/` | 22 testes com `node:test` e `fetch` falso. | 5 |
 
 ---
 
@@ -337,4 +330,4 @@ Obriga a ter uma entrada para cada variante (`primario`, `secundario`, `perigo`)
 
 ## 9. Se ele perguntar sobre o SDK
 
-O roteiro manda criar o projeto com o mesmo SDK do Expo Go (57 ou 58). O projeto começou no 57 e foi atualizado para o **58** no commit `sdk 58`, porque o Expo Go do celular já estava no 58: **o Expo Go só abre projetos do SDK dele**. A atualização é feita com `npx expo install expo@^58` seguido de `npx expo install --fix`, que acerta a versão de cada biblioteca para o SDK novo. A única mudança no código foi uma linha na `TelaMoradores`: no React Native 0.88 o `ListEmptyComponent` não aceita mais `null`, então passou a receber `undefined` enquanto a lista carrega.
+O roteiro manda criar o projeto com o mesmo SDK do Expo Go (57 ou 58). O projeto começou no 57 e foi atualizado para o **58** no commit `sdk 58`, porque o Expo Go do celular já estava no 58: **o Expo Go só abre projetos do SDK dele**. A atualização é feita com `npx expo install expo@^58` seguido de `npx expo install --fix`, que acerta a versão de cada biblioteca para o SDK novo. A única mudança no código foi uma linha na `TelaMoradores` (e ela não conta entre as 5): no React Native 0.88 o `ListEmptyComponent` não aceita mais `null`, então passou a receber `undefined` enquanto a lista carrega.

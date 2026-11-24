@@ -1,7 +1,5 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 
-import { CORES } from '../tema';
-
 type Variante = 'primario' | 'secundario' | 'perigo';
 
 interface BotaoProps {
@@ -11,12 +9,10 @@ interface BotaoProps {
   carregando?: boolean;
 }
 
-// Cada variante é um par de cores. Record<Variante, ...> obriga a ter as três:
-// esqueça uma e o TypeScript reclama.
-const VARIANTES: Record<Variante, { fundo: string; texto: string }> = {
-  primario: { fundo: CORES.primaria, texto: CORES.superficie },
-  secundario: { fundo: CORES.travado, texto: CORES.noite },
-  perigo: { fundo: CORES.perigo, texto: CORES.superficie },
+const CORES: Record<Variante, { fundo: string; texto: string }> = {
+  primario: { fundo: '#14A5C4', texto: '#FFFFFF' },
+  secundario: { fundo: '#E2E8F0', texto: '#0F1B33' },
+  perigo: { fundo: '#DC2626', texto: '#FFFFFF' },
 };
 
 export function Botao({
@@ -25,15 +21,11 @@ export function Botao({
   variante = 'primario',
   carregando = false,
 }: BotaoProps) {
-  const cor = VARIANTES[variante];
+  const cor = CORES[variante];
   return (
     <Pressable
       onPress={aoTocar}
       disabled={carregando}
-      // MUDANÇA: avisa o leitor de tela (TalkBack/VoiceOver) que isto é um
-      // botão e se ele está ocupado. Não muda nada visualmente.
-      accessibilityRole="button"
-      accessibilityState={{ busy: carregando, disabled: carregando }}
       style={({ pressed }) => [
         styles.botao,
         { backgroundColor: cor.fundo, opacity: pressed || carregando ? 0.6 : 1 },

@@ -1,4 +1,5 @@
 /// <reference types="node" />
+// MUDANÇA 5 de 5 (testes automáticos): o roteiro não tem testes. Rode com npm test.
 // Testes do nomeDaUnidade (src/api/unidade.ts). Rode com: npm test
 import assert from 'node:assert/strict';
 import { test } from 'node:test';

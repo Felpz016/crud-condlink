@@ -1,4 +1,5 @@
 # Roda o TypeScript e os testes em cada push e pull request.
+# MUDANÇA 5 de 5 (testes automáticos): o GitHub roda o npm run check e o npm test.
 name: CI
 
 on:

@@ -14,10 +14,10 @@ export function lerClaims(token: string): ClaimsJwt {
   const meio = token.split('.')[1] ?? '';
   const base64 = meio.replace(/-/g, '+').replace(/_/g, '/');
   const completo = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=');
-  return JSON.parse(textoUtf8(atob(completo)));
+  return JSON.parse(textoUtf8(atob(completo))); // MUDANÇA 1: o PDF faz JSON.parse(atob(completo))
 }
 
-// MUDANÇA (correção de um bug do roteiro): o atob devolve BYTES, um caractere
+// MUDANÇA 1 de 5 (correção de um bug do roteiro): o atob devolve BYTES, um caractere
 // por byte. Letra com acento ocupa 2 bytes em UTF-8, então "João" saía "JoÃ£o".
 // Aqui cada byte vira %XX e o decodeURIComponent junta os bytes de volta em
 // letras. (Funciona em qualquer celular; o TextDecoder nem sempre existe.)

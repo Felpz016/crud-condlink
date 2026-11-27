@@ -1,7 +1,11 @@
 # Roda o TypeScript e os testes em cada push e pull request.
 # MUDANÇA 5 de 5 (testes automáticos): o GitHub roda o npm run check e o npm test.
+# Isto é "integração contínua" (CI): toda vez que alguém manda código, uma
+# máquina do GitHub baixa o projeto e confere sozinha. O resultado aparece no
+# pull request como um sinal verde (passou) ou vermelho (quebrou).
 name: CI
 
+# Quando roda: em todo push na main e em todo pull request.
 on:
   push:
     branches: [main]
@@ -9,13 +13,13 @@ on:
 
 jobs:
   verificar:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # uma máquina Linux limpa, emprestada pelo GitHub
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v4 # baixa o código do repositório
+      - uses: actions/setup-node@v4 # instala o Node (o mesmo que roda os testes)
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
-      - run: npm run check
-      - run: npm test
+      - run: npm ci # instala as dependências exatas do package-lock.json
+      - run: npm run check # tsc --noEmit: confere os tipos do TypeScript sem gerar arquivos
+      - run: npm test # roda os testes da pasta tests/ (node:test)

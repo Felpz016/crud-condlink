@@ -1,6 +1,8 @@
 /// <reference types="node" />
 // MUDANÇA 5 de 5 (testes automáticos): o roteiro não tem testes. Rode com npm test.
 // Testes do nomeDaUnidade (src/api/unidade.ts). Rode com: npm test
+// O nomeDaUnidade é do PDF (não mudou); estes testes só garantem que o texto
+// do topo da tela continua certo nos três formatos de unidade que existem.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 

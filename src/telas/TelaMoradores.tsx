@@ -1,3 +1,14 @@
+// =============================================================================
+// TelaMoradores.tsx: a lista de moradores e os botões de cadastrar, editar e
+// inativar (o CRUD inteiro passa por esta tela).
+//
+// Onde entra nas 5 mudanças: MUDANÇA 3 de 5 (sessão vencida volta ao login).
+// Todo pedido à API feito daqui (listar, cadastrar, editar, inativar) agora
+// confere se o erro é de sessão vencida. Se for, a tela não mostra erro:
+// chama aoSessaoExpirar e o App volta ao login.
+// A lista em si também se beneficia da MUDANÇA 2 (listarMoradores.ts) e da
+// MUDANÇA 4 (as máscaras do FormularioMorador), mas sem código novo aqui.
+// =============================================================================
 import { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 
@@ -17,6 +28,8 @@ interface TelaMoradoresProps {
   sessao: Sessao;
   unidade: Unidade;
   // MUDANÇA 3: a tela avisa o App quando o token venceu, e o App volta ao login.
+  // É uma função que o App passa (a sessaoVenceu de App.tsx). O tipo
+  // () => void diz: não recebe nada e não devolve nada.
   aoSessaoExpirar: () => void;
 }
 
@@ -37,8 +50,9 @@ export function TelaMoradores({ sessao, unidade, aoSessaoExpirar }: TelaMoradore
       // MUDANÇA 3: token vencido não vira mensagem; o app volta ao login.
       if (sessaoExpirou(e)) {
         aoSessaoExpirar();
-        return;
+        return; // sai antes do setErro: não mostra mensagem nenhuma
       }
+      // Qualquer outro erro continua como no PDF: mensagem vermelha na tela.
       setErro(mensagemDe(e));
     } finally {
       setCarregando(false);
@@ -52,6 +66,14 @@ export function TelaMoradores({ sessao, unidade, aoSessaoExpirar }: TelaMoradore
   // MUDANÇA 3: cadastrar, editar e inativar passam por aqui. Se o token
   // venceu, volta ao login e devolve false; qualquer outro erro sobe para
   // quem chamou (o formulário ou a janela de confirmação mostram a mensagem).
+  //
+  // Por que uma função só? Sem ela, o mesmo try/catch com sessaoExpirou
+  // apareceria três vezes (salvarNovo, salvarEdicao e confirmarInativacao).
+  // acao é uma função que ainda NÃO rodou: "() => cadastrarMorador(...)".
+  // O chamarApi é quem a executa, dentro do try.
+  //
+  // O boolean de volta diz se deu certo: true fecha o formulário e recarrega a
+  // lista; false (sessão vencida) não faz nada, porque o App já está saindo.
   async function chamarApi(acao: () => Promise<unknown>): Promise<boolean> {
     try {
       await acao();
@@ -61,10 +83,14 @@ export function TelaMoradores({ sessao, unidade, aoSessaoExpirar }: TelaMoradore
         aoSessaoExpirar();
         return false;
       }
+      // Outros erros (CPF repetido, 404...) são relançados com throw, para o
+      // FormularioMorador ou o ConfirmarInativacao mostrarem a mensagem.
       throw e;
     }
   }
 
+  // No PDF, as três funções abaixo chamavam a API direto. Agora cada uma
+  // passa a chamada para o chamarApi (MUDANÇA 3) e só continua se ele devolver true.
   async function salvarNovo(dados: DadosMorador) {
     if (await chamarApi(() => cadastrarMorador(sessao, dados))) {
       setCadastrando(false);

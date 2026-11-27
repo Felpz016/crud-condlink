@@ -1,9 +1,20 @@
+// =============================================================================
+// FormularioMorador.tsx: o formulário (numa Modal) usado para cadastrar E
+// para editar um morador. Quem decide qual dos dois é a TelaMoradores.
+//
+// Onde entra nas 5 mudanças: MUDANÇA 4 de 5 (máscara de CPF e telefone
+// enquanto digita). Só mudaram duas linhas: os onChangeText do CPF e do
+// telefone passam o texto pela máscara antes de guardar no estado.
+// A máscara é só visual: na hora de enviar, cadastrarMorador.ts e
+// editarMorador.ts usam somenteDigitos, então a API recebe só números.
+// =============================================================================
 import { useState } from 'react';
 import { Modal, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { DadosMorador } from '../api/cadastrarMorador';
 import { nomeDaUnidade, Unidade } from '../api/unidade';
 import { mensagemDe } from '../servicos/http';
+// MUDANÇA 4: mascararCpf e mascararTelefone são as funções novas (formatar.ts).
 import { mascararCpf, mascararTelefone, somenteDigitos } from '../utils/formatar';
 import { Botao } from './Botao';
 import { Campo } from './Campo';
@@ -58,6 +69,8 @@ export function FormularioMorador(props: FormularioMoradorProps) {
           rotulo="CPF"
           value={dados.cpf}
           // MUDANÇA 4: o PDF faz alterar('cpf', v); a máscara põe pontos e traço enquanto digita.
+          // A cada tecla: v chega cru ("1112"), a máscara devolve "111.2", o
+          // estado guarda "111.2" e o value mostra isso no campo.
           onChangeText={(v) => alterar('cpf', mascararCpf(v))}
           keyboardType="number-pad"
           placeholder="000.000.000-00"
@@ -73,6 +86,7 @@ export function FormularioMorador(props: FormularioMoradorProps) {
           rotulo="Telefone"
           value={dados.telefone}
           // MUDANÇA 4: máscara também no telefone: (16) 3333-4444 ou (16) 99999-8888.
+          // Ela também corta no 11º dígito (DDD + 9), então não passa do tamanho.
           onChangeText={(v) => alterar('telefone', mascararTelefone(v))}
           keyboardType="phone-pad"
           placeholder="(16) 3333-4444"
@@ -98,6 +112,8 @@ export function FormularioMorador(props: FormularioMoradorProps) {
 }
 
 // Devolve o primeiro problema encontrado, ou texto vazio se está tudo certo.
+// (Validação do PDF. Repare que ela já conta só os dígitos com somenteDigitos,
+// por isso continua funcionando com a máscara: os pontos não atrapalham.)
 function validar(dados: DadosMorador, telefoneTravado: boolean): string {
   if (dados.nome.trim().length < 3) {
     return 'Informe o nome completo.';

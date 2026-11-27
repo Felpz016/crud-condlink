@@ -1,6 +1,10 @@
 /// <reference types="node" />
 // MUDANÇA 5 de 5 (testes automáticos): o roteiro não tem testes. Rode com npm test.
 // Testes de src/utils/formatar.ts. Rode com: npm test
+//
+// Os quatro primeiros testes conferem as funções do PDF. Os três últimos
+// são da MUDANÇA 4 (máscara enquanto digita): eles simulam o usuário
+// digitando um dígito por vez, colando um CPF comprido e apagando.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
@@ -35,6 +39,8 @@ test('separarTelefone é o caminho inverso', () => {
   assert.deepEqual(separarTelefone('33334444'), { ddd: '', numero: '33334444' });
 });
 
+// MUDANÇA 4: cada linha é o campo depois de mais algumas teclas.
+// A última cola 15 dígitos: a máscara corta no 11º.
 test('mascararCpf vai formatando enquanto digita e para no 11º dígito', () => {
   assert.equal(mascararCpf('111'), '111');
   assert.equal(mascararCpf('1112'), '111.2');
@@ -43,6 +49,7 @@ test('mascararCpf vai formatando enquanto digita e para no 11º dígito', () => 
   assert.equal(mascararCpf('111222333449999'), '111.222.333-44');
 });
 
+// MUDANÇA 4: o mesmo para o telefone, fixo (10 dígitos) e celular (11).
 test('mascararTelefone vai formatando enquanto digita', () => {
   assert.equal(mascararTelefone('16'), '16');
   assert.equal(mascararTelefone('163'), '(16) 3');
@@ -51,6 +58,8 @@ test('mascararTelefone vai formatando enquanto digita', () => {
   assert.equal(mascararTelefone('16999998888'), '(16) 99999-8888');
 });
 
+// MUDANÇA 4: o caso que mais quebra máscara feita à mão. Se a máscara
+// recolocasse o ponto logo depois de apagar, o usuário nunca sairia do lugar.
 test('apagar com backspace não trava a máscara', () => {
   // "(16) 3" menos o "3" vira "(16) ", que a máscara transforma em "16".
   assert.equal(mascararTelefone('(16) '), '16');

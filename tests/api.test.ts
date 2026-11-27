@@ -4,6 +4,15 @@
 // JavaScript por um "fetch de mentira" que responde o que o teste mandar.
 // Assim dá para provar o que o app faz com 401, 404 e um detalhe que falha,
 // sem gastar o usuário de teste da turma. Rode com: npm test
+//
+// O que estes testes provam, ligado a cada mudança:
+//   - MUDANÇA 3: '401 COM token é sessão expirada' e '401 SEM token (login)...'
+//   - MUDANÇA 2: 'se UM detalhe falhar, os outros aparecem'
+//   - o resto confere o comportamento do PDF (token no cabeçalho, DELETE, 404).
+//
+// Formato de todo teste: test('o que deveria acontecer', () => { ... }).
+// Dentro, o assert compara o que aconteceu com o que era esperado; se não
+// bater, o teste falha e o npm test mostra qual foi.
 import assert from 'node:assert/strict';
 import { afterEach, test } from 'node:test';
 
@@ -13,6 +22,8 @@ const { requisicao, sessaoExpirou, mensagemDe } = await import('../src/servicos/
 const { listarMoradores } = await import('../src/api/listarMoradores.ts');
 const { inativarMorador } = await import('../src/api/inativarMorador.ts');
 
+// Guarda o fetch de verdade e o devolve depois de CADA teste (afterEach),
+// para o fetch de mentira de um teste não vazar para o próximo.
 const fetchOriginal = globalThis.fetch;
 afterEach(() => {
   globalThis.fetch = fetchOriginal;
@@ -36,11 +47,15 @@ test('manda o token no cabeçalho Authorization: Bearer', async () => {
   assert.equal(cabecalhos.Authorization, 'Bearer abc');
 });
 
+// MUDANÇA 3: com token, o 401 vira o erro com nome 'SessaoExpirada'.
+// assert.rejects espera que a promessa FALHE e confere o erro com sessaoExpirou.
 test('401 COM token é sessão expirada', async () => {
   globalThis.fetch = (async () => resposta(401, { error: 'Token inválido' })) as typeof fetch;
   await assert.rejects(requisicao('/x', { token: 'velho' }), (e) => sessaoExpirou(e));
 });
 
+// MUDANÇA 3, o outro lado: sem token (tela de login), 401 é senha errada.
+// O app NÃO pode tratar isso como sessão vencida; tem que mostrar o texto da API.
 test('401 SEM token (login) mostra a mensagem da API, não "sessão expirada"', async () => {
   globalThis.fetch = (async () => resposta(401, { error: 'Usuário ou senha inválidos' })) as typeof fetch;
   await assert.rejects(requisicao('/login', { metodo: 'POST' }), (e) => {
@@ -66,6 +81,9 @@ test('listarMoradores junta o telefone do detalhe de cada morador', async () => 
   );
 });
 
+// MUDANÇA 2: o morador 2 responde 500 (erro do servidor). Com o Promise.all
+// do PDF, a função inteira falharia. Com allSettled, os dois aparecem e só a
+// Bia fica sem telefone.
 test('se UM detalhe falhar, os outros aparecem (Promise.allSettled)', async () => {
   globalThis.fetch = (async (url: string) => {
     if (url.includes('?page=1')) {

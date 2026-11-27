@@ -1,3 +1,17 @@
+// =============================================================================
+// App.tsx: o "maestro" do app. Decide qual tela aparece (carregando, login,
+// erro ou moradores) olhando o estado: tem sessão? tem unidade?
+//
+// Onde entra nas 5 mudanças: MUDANÇA 3 de 5 (sessão vencida volta ao login).
+// O caminho completo, do erro até a tela de login:
+//   1. a API responde 401 a um pedido COM token (src/servicos/http.ts);
+//   2. a requisicao lança um erro com o nome 'SessaoExpirada';
+//   3. quem chamou pergunta sessaoExpirou(erro) e, se for, chama sessaoVenceu;
+//   4. sessaoVenceu (aqui embaixo) guarda o aviso e chama o mesmo sair do botão;
+//   5. sem sessão, o App mostra a TelaLogin com "Sua sessão expirou. Entre de novo."
+// Resumo para a apresentação: "Antes o usuário via o erro e tinha que achar
+// o botão Sair. Agora o próprio app sai e explica o motivo."
+// =============================================================================
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
@@ -18,8 +32,12 @@ export default function App() {
   const [verificando, setVerificando] = useState(true);
   const [erro, setErro] = useState('');
   // MUDANÇA 3: o recado que a tela de login mostra ("Sua sessão expirou").
+  // Fica AQUI no App, e não na TelaLogin, porque a TelaLogin é criada de novo
+  // quando o app volta para ela; o App continua vivo e lembra o recado.
   const [avisoLogin, setAvisoLogin] = useState('');
 
+  // Ao abrir o app: tenta reaproveitar a sessão guardada no SecureStore.
+  // (Esta parte é do PDF: token já vencido é apagado antes de ser usado.)
   useEffect(() => {
     async function restaurar() {
       const salva = await lerSessao();
@@ -47,6 +65,9 @@ export default function App() {
         setUnidade(await buscarUnidade(atual));
       } catch (e) {
         // MUDANÇA 3: token vencido volta ao login em vez de mostrar o erro.
+        // No PDF aqui era só setErro(mensagemDe(e)): a tela ficava com o erro
+        // e o botão Sair. Agora o erro de sessão vencida tem tratamento próprio;
+        // qualquer outro erro (sem internet, API fora) continua aparecendo.
         if (sessaoExpirou(e)) {
           sessaoVenceu();
         } else {
@@ -59,6 +80,7 @@ export default function App() {
 
   async function entrou(nova: Sessao) {
     await salvarSessao(JSON.stringify(nova));
+    // MUDANÇA 3: entrou de novo, então o aviso "sessão expirou" some.
     setAvisoLogin('');
     setSessao(nova);
   }
@@ -71,6 +93,8 @@ export default function App() {
 
   // MUDANÇA 3 (desafio "Sessão vencida" do PDF): quando a API responde 401
   // com token, o app sai sozinho e explica o motivo na tela de login.
+  // Ela é passada para a TelaMoradores (prop aoSessaoExpirar), assim a tela
+  // não precisa saber COMO sair: só avisa o App que a sessão venceu.
   async function sessaoVenceu() {
     setAvisoLogin('Sua sessão expirou. Entre de novo.');
     await sair();
@@ -85,6 +109,7 @@ export default function App() {
   }
 
   if (!sessao) {
+    // MUDANÇA 3: a prop aviso leva o recado (vazio no primeiro login).
     return <TelaLogin aoEntrar={entrou} aviso={avisoLogin} />;
   }
 
@@ -106,6 +131,7 @@ export default function App() {
   return (
     <View style={styles.tela}>
       <CabecalhoUnidade nome={sessao.nome} unidade={unidade} aoSair={sair} />
+      {/* MUDANÇA 3: aoSessaoExpirar é o "telefone" da tela para avisar o App. */}
       <TelaMoradores sessao={sessao} unidade={unidade} aoSessaoExpirar={sessaoVenceu} />
       <StatusBar style="light" />
     </View>
